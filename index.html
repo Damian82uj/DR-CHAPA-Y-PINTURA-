@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>DR CHAPA Y PINTURA </title>
+    <link rel="shortcut icon" href="1.jpeg" type="image/x-icon">
+    <link rel="stylesheet" href="style.css">
+    <link rel="icon" href="favicon.ico" type="image/x-icon">
+</head>
+<body>
+    <!-- Cabecera del sistema -->
+    <header class="header">
+        <div class="container">
+            <div class="logo">
+            
+            </div>
+
+            <nav class="nav">
+                <ul>
+                    <li><a href="#registro" class="nav-link active">Registro</a></li>
+                    <li><a href="#inventario" class="nav-link">Inventario</a></li>
+                </ul>
+            </nav>
+        </div>
+    </header>
+
+    <!-- Contenido principal -->
+    <main class="main">
+        <div class="container">
+            <!-- Sección de registro de productos -->
+            <section id="registro" class="section active">
+                <div class="section-header">
+                
+                </div>
+                
+                <div class="form-container">
+                    <form id="form-producto" class="form">
+                        <div class="form-group">
+                            <label for="nombre">Nombre del Producto *</label>
+                            <input type="text" id="nombre" name="nombre" required>
+                            <span class="validation-message"></span>
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="cantidad">Cantidad *</label>
+                                <input type="number" id="cantidad" name="cantidad" min="1" required>
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="unidad">Unidad</label>
+                                <select id="unidad" name="unidad">
+                                    <option value="unidad">Unidad</option>
+                                    <option value="litro">Litro</option>
+                                    <option value="kg">Kilogramo</option>
+                                    <option value="metro">Metro</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="descripcion">Descripción</label>
+                            <textarea id="descripcion" name="descripcion" rows="3"></textarea>
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="fecha">Fecha de Ingreso</label>
+                                <input type="date" id="fecha" name="fecha">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="condicion">Condición</label>
+                                <select id="condicion" name="condicion">
+                                    <option value="nuevo">Nuevo</option>
+                                    <option value="usado">Usado</option>
+                                    <option value="reparado">Reparado</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="notas">Notas Adicionales</label>
+                            <textarea id="notas" name="notas" rows="2"></textarea>
+                        </div>
+                        
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-primary">Registrar Producto</button>
+                            <button type="reset" class="btn btn-secondary">Limpiar Formulario</button>
+                        </div>
+                    </form>
+                </div>
+            </section>
+
+            <!-- Sección de inventario -->
+            <section id="inventario" class="section">
+                <div class="section-header">
+                    
+                </div>
+                
+                <div class="inventory-controls">
+                    <div class="search-box">
+                        <input type="text" id="search-input" placeholder="Buscar productos...">
+                        <button id="search-btn" class="btn btn-secondary">Buscar</button>
+                    </div>
+                    <div class="inventory-actions">
+                        <button id="print-selected" class="btn btn-primary">Imprimir Seleccionados</button>
+                    </div>
+                </div>
+                
+                <div class="table-container">
+                    <table id="inventory-table" class="inventory-table">
+                        <thead>
+                            <tr>
+                                <th width="40px">
+                                    <input type="checkbox" id="select-all">
+                                </th>
+                                <th>Nombre</th>
+                                <th>Cantidad</th>
+                                <th>Unidad</th>
+                                <th>Fecha</th>
+                                <th>Condición</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="inventory-body">
+                            <!-- Los productos se cargarán dinámicamente aquí -->
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div class="empty-state" id="empty-inventory">
+                    
+                </div>
+            </section>
+        </div>
+    </main>
+
+    <!-- Modal para confirmaciones -->
+    <div id="modal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <h3 id="modal-title">Confirmación</h3>
+            <p id="modal-message">¿Estás seguro de que deseas realizar esta acción?</p>
+            <div class="modal-actions">
+                <button id="modal-confirm" class="btn btn-primary">Confirmar</button>
+                <button id="modal-cancel" class="btn btn-secondary">Cancelar</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notificaciones -->
+    <div id="notification" class="notification">
+        <span id="notification-text"></span>
+    </div>
+
+    <!-- Sello de registro animado -->
+    <div id="registration-seal" class="registration-seal">
+        <div class="seal-content">
+            <span class="seal-text">REGISTRADO</span>
+        </div>
+    </div>
+
+    <!-- Scripts -->
+    <script src="main.js"></script>
+</body>
+</html>
