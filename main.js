@@ -4,7 +4,7 @@
 const SistemaTaller = {
     // Configuración del sistema
     config: {
-        companyName: 'Mi Taller',
+        companyName: 'DR CHAPA Y PINTURA',
         lowStockThreshold: 5,
         animations: true,
         theme: 'industrial'
@@ -16,12 +16,13 @@ const SistemaTaller = {
         currentSection: 'registro',
         editingProduct: null,
         searchTerm: '',
-        filterCategory: ''
+        filterCategory: '',
+        selectedProducts: new Set() // Para almacenar IDs de productos seleccionados
     },
     
     // Inicialización del sistema
     init: function() {
-        console.log('Inicializando Sistema de Gestión de Taller v3.0...');
+        console.log('Inicializando Sistema de Gestión de Taller v4.1...');
         
         // Cargar configuración y datos
         this.cargarConfiguracion();
@@ -167,6 +168,22 @@ const SistemaTaller = {
             });
         }
         
+        // Botón para imprimir seleccionados
+        const printSelected = document.getElementById('print-selected');
+        if (printSelected) {
+            printSelected.addEventListener('click', () => {
+                this.imprimirSeleccionados();
+            });
+        }
+        
+        // Checkbox para seleccionar/deseleccionar todos
+        const selectAll = document.getElementById('select-all');
+        if (selectAll) {
+            selectAll.addEventListener('change', (e) => {
+                this.toggleSeleccionarTodos(e.target.checked);
+            });
+        }
+        
         // Modal
         const modal = document.getElementById('modal');
         const closeModal = document.querySelector('.close-modal');
@@ -200,147 +217,6 @@ const SistemaTaller = {
                     this.filtrarInventario();
                 }
             });
-        }
-        
-        // Configurar autocompletado para nombre de producto
-        this.configurarAutocompletado();
-    },
-    
-    // ===== FUNCIONALIDAD DE AUTOCOMPLETADO MEJORADA =====
-    configurarAutocompletado: function() {
-        const nombreInput = document.getElementById('nombre');
-        if (!nombreInput) return;
-        
-        // Crear contenedor para sugerencias
-        const sugerenciasContainer = document.createElement('div');
-        sugerenciasContainer.className = 'sugerencias-autocompletado';
-        sugerenciasContainer.id = 'sugerencias-nombre';
-        nombreInput.parentNode.appendChild(sugerenciasContainer);
-        
-        // Evento de entrada de texto
-        nombreInput.addEventListener('input', (e) => {
-            const valor = e.target.value.toLowerCase().trim();
-            this.mostrarSugerencias(valor, sugerenciasContainer);
-        });
-        
-        // Evento de foco
-        nombreInput.addEventListener('focus', (e) => {
-            const valor = e.target.value.toLowerCase().trim();
-            if (valor.length > 0) {
-                this.mostrarSugerencias(valor, sugerenciasContainer);
-            }
-        });
-        
-        // Ocultar sugerencias al hacer clic fuera
-        document.addEventListener('click', (e) => {
-            if (e.target !== nombreInput && !sugerenciasContainer.contains(e.target)) {
-                sugerenciasContainer.style.display = 'none';
-            }
-        });
-        
-        // Manejar teclas especiales
-        nombreInput.addEventListener('keydown', (e) => {
-            const sugerenciasVisibles = sugerenciasContainer.style.display === 'block';
-            const itemsSugerencia = sugerenciasContainer.querySelectorAll('.sugerencia-item');
-            
-            if (e.key === 'ArrowDown' && sugerenciasVisibles && itemsSugerencia.length > 0) {
-                e.preventDefault();
-                itemsSugerencia[0].focus();
-            }
-        });
-    },
-
-    mostrarSugerencias: function(valor, contenedor) {
-        // Limpiar sugerencias anteriores
-        contenedor.innerHTML = '';
-        
-        if (valor.length === 0) {
-            contenedor.style.display = 'none';
-            return;
-        }
-        
-        // Obtener nombres únicos de productos (excluyendo el que se está editando)
-        const nombresUnicos = [...new Set(
-            this.state.productos
-                .filter(producto => 
-                    !this.state.editingProduct || producto.id !== this.state.editingProduct
-                )
-                .map(producto => producto.nombre)
-        )];
-        
-        // Filtrar nombres que coincidan
-        const sugerencias = nombresUnicos.filter(nombre => 
-            nombre.toLowerCase().includes(valor)
-        ).slice(0, 8); // Limitar a 8 sugerencias
-        
-        if (sugerencias.length === 0) {
-            contenedor.style.display = 'none';
-            return;
-        }
-        
-        // Crear elementos de sugerencia
-        sugerencias.forEach(sugerencia => {
-            const item = document.createElement('div');
-            item.className = 'sugerencia-item';
-            item.textContent = sugerencia;
-            item.tabIndex = 0; // Hacerlo enfocable
-            
-            // Resaltar la parte que coincide
-            const indiceCoincidencia = sugerencia.toLowerCase().indexOf(valor);
-            if (indiceCoincidencia >= 0) {
-                const antes = sugerencia.substring(0, indiceCoincidencia);
-                const coincidencia = sugerencia.substring(indiceCoincidencia, indiceCoincidencia + valor.length);
-                const despues = sugerencia.substring(indiceCoincidencia + valor.length);
-                
-                item.innerHTML = `${antes}<strong>${coincidencia}</strong>${despues}`;
-            }
-            
-            // Eventos del item
-            item.addEventListener('click', () => {
-                this.seleccionarSugerencia(sugerencia);
-                contenedor.style.display = 'none';
-            });
-            
-            item.addEventListener('keydown', (e) => {
-                if (e.key === 'Enter') {
-                    this.seleccionarSugerencia(sugerencia);
-                    contenedor.style.display = 'none';
-                } else if (e.key === 'ArrowDown') {
-                    e.preventDefault();
-                    const siguiente = item.nextElementSibling;
-                    if (siguiente) siguiente.focus();
-                } else if (e.key === 'ArrowUp') {
-                    e.preventDefault();
-                    const anterior = item.previousElementSibling;
-                    if (anterior) {
-                        anterior.focus();
-                    } else {
-                        document.getElementById('nombre').focus();
-                    }
-                } else if (e.key === 'Escape') {
-                    contenedor.style.display = 'none';
-                    document.getElementById('nombre').focus();
-                }
-            });
-            
-            contenedor.appendChild(item);
-        });
-        
-        contenedor.style.display = 'block';
-    },
-
-    seleccionarSugerencia: function(nombre) {
-        const nombreInput = document.getElementById('nombre');
-        nombreInput.value = nombre;
-        
-        // Disparar evento input para activar validación
-        const event = new Event('input', { bubbles: true });
-        nombreInput.dispatchEvent(event);
-        
-        // Enfocar siguiente campo si es posible
-        const cantidadInput = document.getElementById('cantidad');
-        if (cantidadInput) {
-            cantidadInput.focus();
         }
     },
     
@@ -561,6 +437,9 @@ const SistemaTaller = {
             }
             
             tr.innerHTML = `
+                <td class="checkbox-container">
+                    <input type="checkbox" class="product-checkbox" data-id="${producto.id}">
+                </td>
                 <td>${this.escapeHtml(producto.nombre)}</td>
                 <td>${producto.cantidad}</td>
                 <td>${this.obtenerNombreUnidad(producto.unidad)}</td>
@@ -579,10 +458,66 @@ const SistemaTaller = {
             tbody.appendChild(tr);
         });
         
+        // Configurar eventos para checkboxes
+        this.configurarCheckboxes();
+        
+        // Actualizar estado del checkbox "Seleccionar todos"
+        this.actualizarSeleccionarTodos();
+        
         // Si no hay productos después de filtrar, mostrar estado vacío
         if (productosMostrar.length === 0 && emptyState) {
             emptyState.style.display = 'block';
             emptyState.innerHTML = '<p>No se encontraron productos que coincidan con los filtros.</p>';
+        }
+    },
+    
+    // Configurar eventos para checkboxes de productos
+    configurarCheckboxes: function() {
+        const checkboxes = document.querySelectorAll('.product-checkbox');
+        checkboxes.forEach(checkbox => {
+            checkbox.addEventListener('change', (e) => {
+                const productId = e.target.getAttribute('data-id');
+                if (e.target.checked) {
+                    this.state.selectedProducts.add(productId);
+                } else {
+                    this.state.selectedProducts.delete(productId);
+                }
+                this.actualizarSeleccionarTodos();
+            });
+        });
+    },
+    
+    // Seleccionar o deseleccionar todos los productos
+    toggleSeleccionarTodos: function(checked) {
+        const checkboxes = document.querySelectorAll('.product-checkbox');
+        checkboxes.forEach(checkbox => {
+            checkbox.checked = checked;
+            const productId = checkbox.getAttribute('data-id');
+            if (checked) {
+                this.state.selectedProducts.add(productId);
+            } else {
+                this.state.selectedProducts.delete(productId);
+            }
+        });
+    },
+    
+    // Actualizar estado del checkbox "Seleccionar todos"
+    actualizarSeleccionarTodos: function() {
+        const selectAll = document.getElementById('select-all');
+        if (!selectAll) return;
+        
+        const checkboxes = document.querySelectorAll('.product-checkbox');
+        const checkedCount = document.querySelectorAll('.product-checkbox:checked').length;
+        
+        if (checkedCount === 0) {
+            selectAll.checked = false;
+            selectAll.indeterminate = false;
+        } else if (checkedCount === checkboxes.length) {
+            selectAll.checked = true;
+            selectAll.indeterminate = false;
+        } else {
+            selectAll.checked = false;
+            selectAll.indeterminate = true;
         }
     },
     
@@ -648,11 +583,120 @@ const SistemaTaller = {
             `¿Estás seguro de que deseas eliminar el producto "${producto.nombre}"?`,
             () => {
                 this.state.productos = this.state.productos.filter(p => p.id !== id);
+                this.state.selectedProducts.delete(id);
                 this.guardarProductos();
                 this.cargarInventario();
                 this.mostrarNotificacion('Producto eliminado correctamente', 'success');
             }
         );
+    },
+    
+    // ===== FUNCIONALIDAD DE IMPRESIÓN =====
+    
+    // Imprimir productos seleccionados
+    imprimirSeleccionados: function() {
+        if (this.state.selectedProducts.size === 0) {
+            this.mostrarNotificacion('Seleccione al menos un producto para imprimir', 'warning');
+            return;
+        }
+        
+        // Obtener productos seleccionados
+        const productosSeleccionados = this.state.productos.filter(p => 
+            this.state.selectedProducts.has(p.id)
+        );
+        
+        // Generar contenido para imprimir
+        this.generarVistaImpresion(productosSeleccionados);
+    },
+    
+    // Generar vista para impresión (sin encabezado y pie de página)
+    generarVistaImpresion: function(productos) {
+        // Crear ventana de impresión
+        const ventanaImpresion = window.open('', '_blank');
+        
+        // Generar contenido HTML para la impresión (sin encabezado ni pie de página)
+        const contenido = `
+            <!DOCTYPE html>
+            <html>
+            <head>
+                <title>Inventario - ${this.config.companyName}</title>
+                <style>
+                    body {
+                        font-family: Arial, sans-serif;
+                        margin: 20px;
+                        color: #333;
+                    }
+                    .print-info {
+                        margin-bottom: 20px;
+                        display: flex;
+                        justify-content: space-between;
+                    }
+                    .print-table {
+                        width: 100%;
+                        border-collapse: collapse;
+                        margin-top: 15px;
+                    }
+                    .print-table th, .print-table td {
+                        border: 1px solid #ddd;
+                        padding: 8px;
+                        text-align: left;
+                    }
+                    .print-table th {
+                        background-color: #f2f2f2;
+                        font-weight: bold;
+                    }
+                    @media print {
+                        body {
+                            margin: 0;
+                            padding: 15px;
+                        }
+                    }
+                </style>
+            </head>
+            <body>
+                <div class="print-info">
+                    <div>
+                        <strong>Fecha de impresión:</strong> ${new Date().toLocaleDateString('es-ES')}
+                    </div>
+                    <div>
+                        <strong>Productos seleccionados:</strong> ${productos.length}
+                    </div>
+                </div>
+                
+                <table class="print-table">
+                    <thead>
+                        <tr>
+                            <th>Nombre del Producto</th>
+                            <th>Cantidad</th>
+                            <th>Unidad</th>
+                            <th>Condición</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${productos.map(producto => `
+                            <tr>
+                                <td>${this.escapeHtml(producto.nombre)}</td>
+                                <td>${producto.cantidad}</td>
+                                <td>${this.obtenerNombreUnidad(producto.unidad)}</td>
+                                <td>${this.obtenerNombreCondicion(producto.condicion)}</td>
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            </body>
+            </html>
+        `;
+        
+        // Escribir el contenido en la ventana
+        ventanaImpresion.document.write(contenido);
+        ventanaImpresion.document.close();
+        
+        // Esperar a que se cargue el contenido y luego imprimir
+        ventanaImpresion.onload = function() {
+            ventanaImpresion.print();
+        };
+        
+        this.mostrarNotificacion(`Generando informe de ${productos.length} productos`, 'success');
     },
     
     // Exportar datos a JSON
@@ -726,10 +770,17 @@ const SistemaTaller = {
     
     // Eliminar todos los datos
     eliminarTodosLosDatos: function() {
-        this.state.productos = [];
-        this.guardarProductos();
-        this.cargarInventario();
-        this.mostrarNotificacion('Todos los datos han sido eliminados', 'success');
+        this.mostrarModalConfirmacion(
+            'Eliminar Todos los Datos',
+            '¿Estás seguro de que deseas eliminar todos los datos del sistema? Esta acción no se puede deshacer.',
+            () => {
+                this.state.productos = [];
+                this.state.selectedProducts.clear();
+                this.guardarProductos();
+                this.cargarInventario();
+                this.mostrarNotificacion('Todos los datos han sido eliminados', 'success');
+            }
+        );
     },
     
     // Exportar a CSV
