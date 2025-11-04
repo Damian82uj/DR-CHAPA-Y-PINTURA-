@@ -3,8 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DR CHAPA Y PINTURA </title>
-    <link rel="shortcut icon" href="1.jpeg" type="image/x-icon">
+    <title>Sistema de Gestión de Taller</title>
     <link rel="stylesheet" href="style.css">
     <link rel="icon" href="favicon.ico" type="image/x-icon">
 </head>
@@ -13,7 +12,7 @@
     <header class="header">
         <div class="container">
             <div class="logo">
-            
+                
             </div>
 
             <nav class="nav">
@@ -31,7 +30,7 @@
             <!-- Sección de registro de productos -->
             <section id="registro" class="section active">
                 <div class="section-header">
-                
+                    
                 </div>
                 
                 <div class="form-container">
@@ -104,18 +103,13 @@
                         <input type="text" id="search-input" placeholder="Buscar productos...">
                         <button id="search-btn" class="btn btn-secondary">Buscar</button>
                     </div>
-                    <div class="inventory-actions">
-                        <button id="print-selected" class="btn btn-primary">Imprimir Seleccionados</button>
-                    </div>
+                    <button id="clear-filters" class="btn btn-secondary">Limpiar Filtros</button>
                 </div>
                 
                 <div class="table-container">
                     <table id="inventory-table" class="inventory-table">
                         <thead>
                             <tr>
-                                <th width="40px">
-                                    <input type="checkbox" id="select-all">
-                                </th>
                                 <th>Nombre</th>
                                 <th>Cantidad</th>
                                 <th>Unidad</th>
@@ -131,8 +125,7 @@
                 </div>
                 
                 <div class="empty-state" id="empty-inventory">
-                    
-                </div>
+                 
             </section>
         </div>
     </main>
@@ -155,10 +148,9 @@
         <span id="notification-text"></span>
     </div>
 
-
+    
 
     <!-- Scripts -->
     <script src="main.js"></script>
 </body>
 </html>
-
