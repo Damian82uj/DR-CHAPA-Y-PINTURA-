@@ -375,7 +375,7 @@ input:focus, select:focus, textarea:focus {
   flex: 1;
 }
 
-.inventory-actions {
+.filter-controls {
   display: flex;
   gap: var(--spacing-md);
   align-items: center;
@@ -550,60 +550,6 @@ input:focus, select:focus, textarea:focus {
   transform: rotate(-15deg);
 }
 
-/* ===== ESTILOS PARA CHECKBOXES ===== */
-.checkbox-container {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.checkbox-container input[type="checkbox"] {
-  width: 18px;
-  height: 18px;
-  cursor: pointer;
-}
-
-/* ===== ESTILOS PARA IMPRESIÓN ===== */
-@media print {
-  body * {
-    visibility: hidden;
-  }
-  
-  #printable-report, #printable-report * {
-    visibility: visible;
-  }
-  
-  #printable-report {
-    position: absolute;
-    left: 0;
-    top: 0;
-    width: 100%;
-    padding: 20px;
-    font-family: Arial, sans-serif;
-  }
-  
-  .print-table {
-    width: 100%;
-    border-collapse: collapse;
-    margin-top: 15px;
-  }
-  
-  .print-table th, .print-table td {
-    border: 1px solid #ddd;
-    padding: 8px;
-    text-align: left;
-  }
-  
-  .print-table th {
-    background-color: #f2f2f2;
-    font-weight: bold;
-  }
-  
-  .no-print {
-    display: none !important;
-  }
-}
-
 /* ===== ANIMACIONES OPTIMIZADAS ===== */
 @keyframes fadeIn {
   from {
@@ -663,11 +609,6 @@ input:focus, select:focus, textarea:focus {
   
   .search-box {
     max-width: 100%;
-  }
-  
-  .inventory-actions {
-    width: 100%;
-    justify-content: space-between;
   }
   
   .form-actions {
@@ -777,4 +718,51 @@ p, li, td {
 /* Mejoras para tablas */
 .low-stock {
   background-color: rgba(255, 193, 7, 0.1) !important;
+}
+/* ============================================= */
+/* ESTILOS PARA AUTOCOMPLETADO DE NOMBRES */
+/* ============================================= */
+
+.form-group {
+    position: relative;
+}
+
+.sugerencias-autocompletado {
+    position: absolute;
+    top: 100%;
+    left: 0;
+    right: 0;
+    background: white;
+    border: 1px solid #ddd;
+    border-top: none;
+    border-radius: 0 0 4px 4px;
+    max-height: 150px;
+    overflow-y: auto;
+    z-index: 1000;
+    display: none;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.sugerencia-item {
+    padding: 10px 12px;
+    cursor: pointer;
+    border-bottom: 1px solid #f0f0f0;
+    font-size: 14px;
+    color: #333;
+    transition: background-color 0.2s ease;
+}
+
+.sugerencia-item:hover {
+    background-color: #f8f9fa;
+}
+
+.sugerencia-item:last-child {
+    border-bottom: none;
+}
+
+/* Mejorar el aspecto del input cuando hay sugerencias */
+#nombre:focus {
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+    border-bottom-color: #ddd;
 }
