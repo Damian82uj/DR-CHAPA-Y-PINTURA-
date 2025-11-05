@@ -1040,3 +1040,4 @@ document.addEventListener('DOMContentLoaded', function() {
 
 // Exponer objeto global para acceso desde la consola (solo desarrollo)
 window.SistemaTaller = SistemaTaller;
+
