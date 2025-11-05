@@ -4,7 +4,7 @@
 const SistemaTaller = {
     // Configuración del sistema
     config: {
-        companyName: 'Mi Taller',
+        companyName: 'DR CHAPA Y PINTURA',
         lowStockThreshold: 5,
         animations: true,
         theme: 'industrial'
@@ -16,12 +16,13 @@ const SistemaTaller = {
         currentSection: 'registro',
         editingProduct: null,
         searchTerm: '',
-        filterCategory: ''
+        filterCategory: '',
+        selectedProducts: new Set() // Para la funcionalidad de impresión
     },
     
     // Inicialización del sistema
     init: function() {
-        console.log('Inicializando Sistema de Gestión de Taller v3.0...');
+        console.log('Inicializando Sistema de Gestión de Taller v4.0...');
         
         // Cargar configuración y datos
         this.cargarConfiguracion();
@@ -144,6 +145,15 @@ const SistemaTaller = {
             }
         }
         
+        // Formulario de configuración
+        const formConfiguracion = document.getElementById('form-configuracion');
+        if (formConfiguracion) {
+            formConfiguracion.addEventListener('submit', (e) => {
+                e.preventDefault();
+                this.guardarConfiguracionDesdeFormulario();
+            });
+        }
+        
         // Controles de inventario
         const searchInput = document.getElementById('search-input');
         if (searchInput) {
@@ -164,6 +174,28 @@ const SistemaTaller = {
         if (clearFilters) {
             clearFilters.addEventListener('click', () => {
                 this.limpiarFiltros();
+            });
+        }
+        
+        // Botones de exportación e importación
+        const exportBtn = document.getElementById('export-data');
+        if (exportBtn) {
+            exportBtn.addEventListener('click', () => {
+                this.exportarDatos();
+            });
+        }
+        
+        const importBtn = document.getElementById('import-data');
+        if (importBtn) {
+            importBtn.addEventListener('click', () => {
+                document.getElementById('import-file').click();
+            });
+        }
+        
+        const importFile = document.getElementById('import-file');
+        if (importFile) {
+            importFile.addEventListener('change', (e) => {
+                this.importarDatos(e);
             });
         }
         
@@ -204,6 +236,9 @@ const SistemaTaller = {
         
         // Configurar autocompletado para nombre de producto
         this.configurarAutocompletado();
+        
+        // Configurar funcionalidad de impresión
+        this.configurarImpresion();
     },
     
     // ===== FUNCIONALIDAD DE AUTOCOMPLETADO MEJORADA =====
@@ -344,6 +379,155 @@ const SistemaTaller = {
         }
     },
     
+    // ===== FUNCIONALIDAD DE IMPRESIÓN =====
+    configurarImpresion: function() {
+        // Botón de imprimir seleccionados
+        const printBtn = document.getElementById('print-selected');
+        if (printBtn) {
+            printBtn.addEventListener('click', () => {
+                this.mostrarVistaImpresion();
+            });
+        }
+        
+        // Botones de la vista de impresión
+        const printClose = document.getElementById('print-close');
+        if (printClose) {
+            printClose.addEventListener('click', () => {
+                this.cerrarVistaImpresion();
+            });
+        }
+        
+        const printSave = document.getElementById('print-save');
+        if (printSave) {
+            printSave.addEventListener('click', () => {
+                this.guardarComoPDF();
+            });
+        }
+        
+        const printSend = document.getElementById('print-send');
+        if (printSend) {
+            printSend.addEventListener('click', () => {
+                this.imprimirDocumento();
+            });
+        }
+        
+        // Seleccionar todos los productos
+        const selectAll = document.getElementById('select-all');
+        if (selectAll) {
+            selectAll.addEventListener('change', (e) => {
+                this.seleccionarTodosProductos(e.target.checked);
+            });
+        }
+    },
+    
+    seleccionarProducto: function(id, checked) {
+        if (checked) {
+            this.state.selectedProducts.add(id);
+        } else {
+            this.state.selectedProducts.delete(id);
+        }
+        
+        // Actualizar estado del checkbox "Seleccionar todos"
+        this.actualizarSeleccionTodos();
+    },
+    
+    seleccionarTodosProductos: function(checked) {
+        const checkboxes = document.querySelectorAll('.product-checkbox');
+        
+        if (checked) {
+            // Agregar todos los IDs visibles al conjunto
+            this.state.selectedProducts.clear();
+            checkboxes.forEach(checkbox => {
+                const id = checkbox.dataset.id;
+                this.state.selectedProducts.add(id);
+                checkbox.checked = true;
+            });
+        } else {
+            // Limpiar todos los seleccionados
+            this.state.selectedProducts.clear();
+            checkboxes.forEach(checkbox => {
+                checkbox.checked = false;
+            });
+        }
+    },
+    
+    actualizarSeleccionTodos: function() {
+        const selectAll = document.getElementById('select-all');
+        if (!selectAll) return;
+        
+        const checkboxes = document.querySelectorAll('.product-checkbox');
+        const checkedCount = document.querySelectorAll('.product-checkbox:checked').length;
+        
+        if (checkedCount === 0) {
+            selectAll.checked = false;
+            selectAll.indeterminate = false;
+        } else if (checkedCount === checkboxes.length) {
+            selectAll.checked = true;
+            selectAll.indeterminate = false;
+        } else {
+            selectAll.checked = false;
+            selectAll.indeterminate = true;
+        }
+    },
+    
+    mostrarVistaImpresion: function() {
+        if (this.state.selectedProducts.size === 0) {
+            this.mostrarNotificacion('Selecciona al menos un producto para imprimir', 'warning');
+            return;
+        }
+        
+        const printView = document.getElementById('print-view');
+        const printBody = document.getElementById('print-body');
+        const printDate = document.getElementById('print-date');
+        const printTotal = document.getElementById('print-total');
+        
+        if (!printView || !printBody) return;
+        
+        // Limpiar tabla de impresión
+        printBody.innerHTML = '';
+        
+        // Obtener productos seleccionados
+        const productosSeleccionados = this.state.productos.filter(
+            producto => this.state.selectedProducts.has(producto.id)
+        );
+        
+        // Llenar tabla de impresión
+        productosSeleccionados.forEach(producto => {
+            const tr = document.createElement('tr');
+            tr.innerHTML = `
+                <td>${this.escapeHtml(producto.nombre)}</td>
+                <td>${producto.cantidad}</td>
+                <td>${this.obtenerNombreUnidad(producto.unidad)}</td>
+                <td>${this.obtenerNombreCondicion(producto.condicion)}</td>
+            `;
+            printBody.appendChild(tr);
+        });
+        
+        // Actualizar información
+        printDate.textContent = new Date().toLocaleDateString('es-ES');
+        printTotal.textContent = productosSeleccionados.length;
+        
+        // Mostrar vista de impresión
+        printView.classList.add('active');
+    },
+    
+    cerrarVistaImpresion: function() {
+        const printView = document.getElementById('print-view');
+        if (printView) {
+            printView.classList.remove('active');
+        }
+    },
+    
+    guardarComoPDF: function() {
+        // En un entorno real, aquí se implementaría la generación de PDF
+        // Por ahora, simulamos la funcionalidad
+        this.mostrarNotificacion('Funcionalidad de guardar como PDF disponible en versión completa', 'info');
+    },
+    
+    imprimirDocumento: function() {
+        window.print();
+    },
+    
     // Cerrar menú móvil (para futuras implementaciones)
     cerrarMenuMovil: function() {
         // Esta función puede expandirse para dispositivos móviles
@@ -388,6 +572,9 @@ const SistemaTaller = {
                     break;
                 case 'registro':
                     this.prepararFormularioRegistro();
+                    break;
+                case 'configuracion':
+                    this.aplicarConfiguracion();
                     break;
             }
         }
@@ -516,6 +703,21 @@ const SistemaTaller = {
         }
     },
     
+    // Guardar configuración desde formulario
+    guardarConfiguracionDesdeFormulario: function() {
+        const formData = new FormData(document.getElementById('form-configuracion'));
+        
+        this.config.companyName = formData.get('company-name') || 'DR CHAPA Y PINTURA';
+        this.config.lowStockThreshold = parseInt(formData.get('low-stock-threshold')) || 5;
+        this.config.theme = formData.get('theme') || 'industrial';
+        this.config.animations = formData.get('animations') === 'on';
+        
+        this.guardarConfiguracion();
+        this.aplicarConfiguracion();
+        
+        this.mostrarNotificacion('Configuración guardada correctamente', 'success');
+    },
+    
     // Mostrar sello de registro animado
     mostrarSelloRegistro: function() {
         const seal = document.getElementById('registration-seal');
@@ -560,7 +762,13 @@ const SistemaTaller = {
                 tr.classList.add('low-stock');
             }
             
+            const isChecked = this.state.selectedProducts.has(producto.id);
+            
             tr.innerHTML = `
+                <td>
+                    <input type="checkbox" class="product-checkbox" data-id="${producto.id}" 
+                           ${isChecked ? 'checked' : ''}>
+                </td>
                 <td>${this.escapeHtml(producto.nombre)}</td>
                 <td>${producto.cantidad}</td>
                 <td>${this.obtenerNombreUnidad(producto.unidad)}</td>
@@ -578,6 +786,16 @@ const SistemaTaller = {
             
             tbody.appendChild(tr);
         });
+        
+        // Configurar eventos de los checkboxes
+        document.querySelectorAll('.product-checkbox').forEach(checkbox => {
+            checkbox.addEventListener('change', (e) => {
+                this.seleccionarProducto(e.target.dataset.id, e.target.checked);
+            });
+        });
+        
+        // Actualizar estado del checkbox "Seleccionar todos"
+        this.actualizarSeleccionTodos();
         
         // Si no hay productos después de filtrar, mostrar estado vacío
         if (productosMostrar.length === 0 && emptyState) {
@@ -722,52 +940,6 @@ const SistemaTaller = {
         };
         
         reader.readAsText(file);
-    },
-    
-    // Eliminar todos los datos
-    eliminarTodosLosDatos: function() {
-        this.state.productos = [];
-        this.guardarProductos();
-        this.cargarInventario();
-        this.mostrarNotificacion('Todos los datos han sido eliminados', 'success');
-    },
-    
-    // Exportar a CSV
-    exportarCSV: function() {
-        if (this.state.productos.length === 0) {
-            this.mostrarNotificacion('No hay datos para exportar', 'warning');
-            return;
-        }
-        
-        const headers = ['Nombre', 'Cantidad', 'Unidad', 'Fecha', 'Condición', 'Descripción'];
-        const csvRows = [headers.join(',')];
-        
-        this.state.productos.forEach(producto => {
-            const row = [
-                `"${producto.nombre.replace(/"/g, '""')}"`,
-                producto.cantidad,
-                `"${this.obtenerNombreUnidad(producto.unidad)}"`,
-                `"${this.formatearFecha(producto.fecha)}"`,
-                `"${this.obtenerNombreCondicion(producto.condicion)}"`,
-                `"${(producto.descripcion || '').replace(/"/g, '""')}"`
-            ];
-            csvRows.push(row.join(','));
-        });
-        
-        const csvString = csvRows.join('\n');
-        const blob = new Blob([csvString], { type: 'text/csv;charset=utf-8;' });
-        const url = URL.createObjectURL(blob);
-        
-        const link = document.createElement('a');
-        link.href = url;
-        link.download = `inventario-taller-${new Date().toISOString().split('T')[0]}.csv`;
-        document.body.appendChild(link);
-        link.click();
-        document.body.removeChild(link);
-        
-        URL.revokeObjectURL(url);
-        
-        this.mostrarNotificacion('Datos exportados a CSV correctamente', 'success');
     },
     
     // Mostrar modal de confirmación
