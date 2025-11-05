@@ -3,10 +3,9 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>DR CHAPA Y PINTURA</title>
-    <link rel="shortcut icon" href="1.jpeg" type="image/x-icon">
+    <title>DR CHAPA Y PINTURA </title>
+    <link rel="shortcut icon" href="assets/images/favicon.ico" type="image/x-icon">
     <link rel="stylesheet" href="style.css">
-    <link rel="icon" href="favicon.ico" type="image/x-icon">
 </head>
 <body>
     <!-- Cabecera del sistema -->
@@ -20,6 +19,7 @@
                 <ul>
                     <li><a href="#registro" class="nav-link active">Registro</a></li>
                     <li><a href="#inventario" class="nav-link">Inventario</a></li>
+            
                 </ul>
             </nav>
         </div>
@@ -87,7 +87,7 @@
                         
                         <div class="form-actions">
                             <button type="submit" class="btn btn-primary">Registrar Producto</button>
-                            <button type="reset" class="btn btn-secondary">Limpiar Formulario</button>
+                            <button type="reset" class="btn btn-secondary">vora
                         </div>
                     </form>
                 </div>
@@ -96,7 +96,7 @@
             <!-- Sección de inventario -->
             <section id="inventario" class="section">
                 <div class="section-header">
-                    
+            
                 </div>
                 
                 <div class="inventory-controls">
@@ -104,13 +104,17 @@
                         <input type="text" id="search-input" placeholder="Buscar productos...">
                         <button id="search-btn" class="btn btn-secondary">Buscar</button>
                     </div>
-                    <button id="clear-filters" class="btn btn-secondary">Limpiar Filtros</button>
+                    <div class="inventory-actions">
+                        
+                        <button id="print-selected" class="btn btn-primary">Imprimir Seleccionados</button>
+                    </div>
                 </div>
                 
                 <div class="table-container">
                     <table id="inventory-table" class="inventory-table">
                         <thead>
                             <tr>
+                                <th><input type="checkbox" id="select-all"></th>
                                 <th>Nombre</th>
                                 <th>Cantidad</th>
                                 <th>Unidad</th>
@@ -126,7 +130,55 @@
                 </div>
                 
                 <div class="empty-state" id="empty-inventory">
-                   
+                
+                </div>
+            </section>
+
+            <!-- Sección de configuración -->
+            <section id="configuracion" class="section">
+                <div class="section-header">
+                    
+                </div>
+                
+                <div class="form-container">
+                    <form id="form-configuracion" class="form">
+                        <div class="form-group">
+                            <label for="company-name">Nombre del Taller</label>
+                            <input type="text" id="company-name" name="company-name">
+                        </div>
+                        
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label for="low-stock-threshold">Umbral de Stock Bajo</label>
+                                <input type="number" id="low-stock-threshold" name="low-stock-threshold" min="1">
+                            </div>
+                            
+                            <div class="form-group">
+                                <label for="theme">Tema de Interfaz</label>
+                                <select id="theme" name="theme">
+                                    <option value="industrial">Industrial</option>
+                                    <option value="modern">Moderno</option>
+                                    <option value="light">Claro</option>
+                                </select>
+                            </div>
+                        </div>
+                        
+                        <div class="form-group">
+                            <div class="checkbox-group">
+                                <input type="checkbox" id="animations" name="animations">
+                                <label for="animations">Activar animaciones</label>
+                            </div>
+                        </div>
+                        
+                        <div class="form-actions">
+                            <button type="submit" class="btn btn-primary">Guardar Configuración</button>
+                            <button type="button" id="export-data" class="btn btn-secondary">Exportar Datos</button>
+                            <button type="button" id="import-data" class="btn btn-secondary">
+                                Importar Datos
+                                <input type="file" id="import-file" accept=".json" style="display: none;">
+                            </button>
+                        </div>
+                    </form>
                 </div>
             </section>
         </div>
@@ -145,16 +197,49 @@
         </div>
     </div>
 
+    <!-- Vista de impresión -->
+    <div id="print-view" class="print-view">
+        <div class="print-header">
+            <h2>DR CHAPA Y PINTURA</h2>
+            <h3>Inventario de Productos</h3>
+            <p>Fecha de impresión: <span id="print-date"></span></p>
+        </div>
+        <div class="print-content">
+            <table id="print-table">
+                <thead>
+                    <tr>
+                        <th>Nombre</th>
+                        <th>Cantidad</th>
+                        <th>Unidad</th>
+                        <th>Condición</th>
+                    </tr>
+                </thead>
+                <tbody id="print-body">
+                    <!-- Los productos seleccionados se cargarán aquí -->
+                </tbody>
+            </table>
+        </div>
+        <div class="print-footer">
+            <p>Total de productos: <span id="print-total">0</span></p>
+        </div>
+        <div class="print-actions">
+            <button id="print-close" class="btn btn-secondary">Cerrar</button>
+        
+            <button id="print-send" class="btn btn-primary">Imprimir</button>
+        </div>
+    </div>
+
     <!-- Notificaciones -->
     <div id="notification" class="notification">
         <span id="notification-text"></span>
     </div>
 
-    
+
+            
+        </div>
+    </div>
 
     <!-- Scripts -->
     <script src="main.js"></script>
 </body>
 </html>
-
-
